@@ -26,6 +26,10 @@ describe("makeOnPayload", () => {
     expect(out.input).toHaveLength(1);
     expect(out.store).toBe(false);
     expect(out.stream).toBe(true);
+    expect(out.text).toEqual({ verbosity: "low" });
+    expect(out.include).toEqual(["reasoning.encrypted_content"]);
+    expect(out.tool_choice).toBe("auto");
+    expect(out.parallel_tool_calls).toBe(true);
   });
 
   it("uses the default instructions when systemPrompt is missing or empty", () => {
@@ -47,6 +51,32 @@ describe("makeOnPayload", () => {
     const out = makeOnPayload("sp")({ input: undefined }) as Record<string, unknown>;
     expect(out.instructions).toBe("sp");
     expect(out.store).toBe(false);
+  });
+
+  it("normalizes generic Responses tools and strips unsupported public parameters", () => {
+    const payload = {
+      ...recordedPayload(),
+      tools: [
+        { type: "function", name: "shell", parameters: {}, strict: false },
+        { type: "web_search_preview" },
+        null,
+      ],
+      text: { verbosity: "medium" },
+      max_output_tokens: 128000,
+      prompt_cache_retention: "24h",
+    };
+
+    const out = makeOnPayload("sp")(payload) as Record<string, unknown> & {
+      tools: unknown[];
+    };
+    expect(out.tools).toEqual([
+      { type: "function", name: "shell", parameters: {}, strict: null },
+      { type: "web_search_preview" },
+      null,
+    ]);
+    expect(out.text).toEqual({ verbosity: "medium" });
+    expect(out).not.toHaveProperty("max_output_tokens");
+    expect(out).not.toHaveProperty("prompt_cache_retention");
   });
 
   it("is idempotent", () => {

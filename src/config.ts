@@ -27,19 +27,19 @@ export const DEFAULT_CODEX_BASE_URL = "https://chatgpt.com/backend-api/codex";
  * worker) match on. Stable strings: changing them is a breaking contract change.
  */
 export const AUTH_CATEGORY = {
-  /** Credential is expired/revoked/unknown — mint a new token. */
-  invalid: "provider_auth_invalid",
-  /** Credential is valid but not authorized to run Codex — fix the access policy. */
-  accessDenied: "provider_access_denied",
-  /** Couldn't verify the credential (whoami unavailable) — cause not established. */
-  undetermined: "provider_auth_undetermined",
+	/** Credential is expired/revoked/unknown — mint a new token. */
+	invalid: "provider_auth_invalid",
+	/** Credential is valid but not authorized to run Codex — fix the access policy. */
+	accessDenied: "provider_access_denied",
+	/** Couldn't verify the credential (whoami unavailable) — cause not established. */
+	undetermined: "provider_auth_undetermined",
 } as const;
 
 export type AuthCategory = (typeof AUTH_CATEGORY)[keyof typeof AUTH_CATEGORY];
 
 /** Default codex auth/whoami host (distinct from the inference host). */
 export const DEFAULT_WHOAMI_URL =
-  "https://auth.openai.com/api/accounts/v1/user-auth-credential/whoami";
+	"https://auth.openai.com/api/accounts/v1/user-auth-credential/whoami";
 
 /** Dated SSE beta the codex backend accepts today. */
 export const OPENAI_BETA = "responses=experimental";
@@ -58,7 +58,7 @@ export const DEFAULT_MAX_TOKENS = 128000;
 /** contextWindow default when /models omits it. */
 export const DEFAULT_CONTEXT_WINDOW = 272000;
 /** `client_version` query param the /models endpoint requires. */
-export const DEFAULT_CODEX_CLIENT_VERSION = "0.139.0";
+export const DEFAULT_CODEX_CLIENT_VERSION = "0.144.1";
 /** Response timeout (ms) for the whoami / models fetches, so they can't hang forever. */
 export const DEFAULT_HTTP_TIMEOUT_MS = 10000;
 
@@ -90,24 +90,28 @@ export const ENV_PI_AGENT_HOME = "PI_AGENT_HOME";
 
 /** The codex inference base URL, honoring CODEX_BASE_URL. */
 export function codexBaseUrl(env: NodeJS.ProcessEnv = process.env): string {
-  return env[ENV_CODEX_BASE_URL]?.trim() || DEFAULT_CODEX_BASE_URL;
+	return env[ENV_CODEX_BASE_URL]?.trim() || DEFAULT_CODEX_BASE_URL;
 }
 
 /** The codex model-listing endpoint (`{codexBaseUrl}/models`), for discovery. */
 export function modelsUrl(env: NodeJS.ProcessEnv = process.env): string {
-  return `${codexBaseUrl(env)}/models`;
+	return `${codexBaseUrl(env)}/models`;
 }
 
 /** The `client_version` query value the /models endpoint requires, honoring the override. */
-export function codexClientVersion(env: NodeJS.ProcessEnv = process.env): string {
-  return env[ENV_CLIENT_VERSION]?.trim() || DEFAULT_CODEX_CLIENT_VERSION;
+export function codexClientVersion(
+	env: NodeJS.ProcessEnv = process.env,
+): string {
+	return env[ENV_CLIENT_VERSION]?.trim() || DEFAULT_CODEX_CLIENT_VERSION;
 }
 
 /** Fetch timeout (ms), honoring CODEX_HTTP_TIMEOUT_MS; falls back to the default for blank/invalid values. */
 export function httpTimeoutMs(env: NodeJS.ProcessEnv = process.env): number {
-  const raw = env[ENV_HTTP_TIMEOUT_MS]?.trim();
-  const parsed = raw ? Number(raw) : Number.NaN;
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_HTTP_TIMEOUT_MS;
+	const raw = env[ENV_HTTP_TIMEOUT_MS]?.trim();
+	const parsed = raw ? Number(raw) : Number.NaN;
+	return Number.isFinite(parsed) && parsed > 0
+		? parsed
+		: DEFAULT_HTTP_TIMEOUT_MS;
 }
 
 /**
@@ -115,8 +119,8 @@ export function httpTimeoutMs(env: NodeJS.ProcessEnv = process.env): number {
  * (base, with the whoami path appended) → default. Mirrors codex's override.
  */
 export function whoamiUrl(env: NodeJS.ProcessEnv = process.env): string {
-  const full = env[ENV_WHOAMI_URL]?.trim();
-  if (full) return full;
-  const base = env[ENV_AUTHAPI_BASE_URL]?.trim().replace(/\/+$/, "");
-  return base ? `${base}/v1/user-auth-credential/whoami` : DEFAULT_WHOAMI_URL;
+	const full = env[ENV_WHOAMI_URL]?.trim();
+	if (full) return full;
+	const base = env[ENV_AUTHAPI_BASE_URL]?.trim().replace(/\/+$/, "");
+	return base ? `${base}/v1/user-auth-credential/whoami` : DEFAULT_WHOAMI_URL;
 }
